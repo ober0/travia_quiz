@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import * as nodemailer from 'nodemailer'
 import * as process from 'node:process'
 
 @Injectable()
 export class SmtpService {
     private transporter: nodemailer.Transporter
-
+    private readonly logger: Logger = new Logger('SmtpService')
     constructor() {
         this.createTransporter()
     }
@@ -22,7 +22,7 @@ export class SmtpService {
 
     async send(email: string, text: string, subject: string) {
         const mailOptions = {
-            from: process.env.SMTP_SERVICE,
+            from: process.env.SMTP_USER,
             to: email,
             subject,
             text
@@ -33,7 +33,8 @@ export class SmtpService {
             return {
                 success: true
             }
-        } catch {
+        } catch (error) {
+            this.logger.error(error)
             return null
         }
     }

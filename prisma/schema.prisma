@@ -14,9 +14,47 @@ datasource db {
 }
 
 model User {
-  id           Int    @id @default(autoincrement())
-  name         String
-  second_name  String
-  email        String @unique
-  passwordHash String
+  uuid           String   @id @default(uuid())
+  avatar         String?
+  username       String
+  firstName      String   @map("first_name")
+  lastName       String   @map("last_name")
+  email          String   @unique
+  hashedPassword String
+  twoFactor      Boolean  @default(true)
+  isForbidden    Boolean  @default(false) @map("is_forbidden")
+  isActive       Boolean  @default(true) @map("is_active")
+  roleUuid       String?  @map("role_uuid")
+  role           Role?    @relation(fields: [roleUuid], references: [uuid], onDelete: SetNull, onUpdate: NoAction)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+}
+
+model Permission {
+  uuid            String           @id @default(uuid())
+  name            String           @unique
+  description     String
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @default(now()) @updatedAt @map("updated_at")
+  rolePermissions RolePermission[]
+}
+
+model Role {
+  uuid            String           @id @default(uuid())
+  name            String           @unique
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @default(now()) @updatedAt @map("updated_at")
+  rolePermissions RolePermission[]
+  user            User[]
+}
+
+model RolePermission {
+  roleUuid       String     @map("role_uuid")
+  permissionUuid String     @map("permission_uuid")
+  permission     Permission @relation(fields: [permissionUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+  role           Role       @relation(fields: [roleUuid], references: [uuid], onDelete: Cascade, onUpdate: NoAction)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @default(now()) @updatedAt @map("updated_at")
+
+  @@id([roleUuid, permissionUuid])
 }
