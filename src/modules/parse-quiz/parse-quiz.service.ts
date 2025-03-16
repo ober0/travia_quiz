@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common'
 import { Cron } from '@nestjs/schedule'
 import { PrismaService } from '../prisma/prisma.service'
 import { CategoriesRepository } from './repositories/categories.repository'
@@ -22,14 +22,30 @@ export class ParseQuizService {
     async handleCron() {
         this.logger.log('Запускаю парсинг вопросов...')
         await this.parseQuizData()
+        this.logger.log('Парсинг вопросов завершен')
     }
 
     async parseQuizData() {
-        // Парсинг категорий
-        await this.parseCategory()
+        try {
+            // Парсинг категорий
+            await this.parseCategory()
 
-        // Парсинг кол-ва вопросов в категориях
-        await this.parsingNumberOfQuestions()
+            // Парсинг кол-ва вопросов в категориях
+            await this.parsingNumberOfQuestions()
+
+            // Получение Token
+            const token: string | null = await this.getToken()
+            if (!token) {
+                throw new InternalServerErrorException('Не удалось получить токен')
+            }
+        } catch (error) {
+            this.logger.error('Ошибка во время парсинга:', error)
+
+            setTimeout(() => {
+                this.logger.log('Повторный запуск парсинга через 1 минуту...')
+                this.parseQuizData()
+            }, 60000)
+        }
     }
 
     private async sleep(ms: number): Promise<void> {
@@ -89,6 +105,18 @@ export class ParseQuizService {
             this.logger.log('Парсинг кол-ва вопросов в категориях завершен успешно')
         } catch (error) {
             this.logger.error('Ошибка при парсинге кол-ва вопросов в категориях:', error)
+        }
+    }
+
+    private async getToken() {
+        this.logger.log('Начинаю получение токена')
+        try {
+            const response = await fetch(`${this.baseUrl}/api_token.php?command=request`).then((r) => r.json())
+            this.logger.log('Токен получен')
+
+            return response?.token ?? null
+        } catch (error) {
+            this.logger.error('Ошибка при получении токена', error)
         }
     }
 }
