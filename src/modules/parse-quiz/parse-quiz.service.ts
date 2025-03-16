@@ -22,7 +22,7 @@ export class ParseQuizService {
         private readonly questionRepository: QuestionRepository
     ) {}
 
-    @Cron('0 0 * * *') // Каждый день в 00:00
+    @Cron('0 0 1,15 * *')
     async handleCron() {
         this.logger.log('Запускаю парсинг вопросов...')
         await this.parseQuizData()
