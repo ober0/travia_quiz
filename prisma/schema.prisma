@@ -58,3 +58,50 @@ model RolePermission {
 
   @@id([roleUuid, permissionUuid])
 }
+
+model QuizCategory {
+  uuid              String             @id @default(uuid())
+  category_id       Int                @unique
+  category_name     String
+  QuizQuestionCount QuizQuestionCount?
+  Question          Question[]
+}
+
+model QuizQuestionCount {
+  uuid          String @id @default(uuid())
+  category_uuid String @unique @map("category_uuid")
+
+  category QuizCategory @relation(fields: [category_uuid], references: [uuid], onDelete: Cascade)
+
+  count Int
+}
+
+model Question {
+  uuid                String @id @default(uuid())
+  category_uuid       String
+  correct_answer_uuid String
+
+  category       QuizCategory @relation(fields: [category_uuid], references: [uuid], onDelete: Cascade)
+  correct_answer Answer       @relation(fields: [correct_answer_uuid], references: [uuid], onDelete: Cascade)
+
+  difficulty     String
+  type           String
+  QuestionAnswer QuestionAnswer[]
+}
+
+model Answer {
+  uuid           String           @id @default(uuid())
+  text           String
+  Question       Question[]
+  QuestionAnswer QuestionAnswer[]
+}
+
+model QuestionAnswer {
+  question_uuid String
+  answer_uuid   String
+
+  question Question @relation(fields: [question_uuid], references: [uuid], onDelete: Cascade)
+  answer   Answer   @relation(fields: [answer_uuid], references: [uuid], onDelete: Cascade)
+
+  @@id([question_uuid, answer_uuid])
+}
