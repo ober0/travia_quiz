@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron } from '@nestjs/schedule'
 import { PrismaService } from '../prisma/prisma.service'
-import { CategoriesRepository } from './categories.repository'
+import { CategoriesRepository } from './repositories/categories.repository'
 import { TranslatorService } from '../translator/translator.service'
-import { QuestionCountRepository } from './question-count.repository'
+import { QuestionCountRepository } from './repositories/question-count.repository'
 
 @Injectable()
 export class ParseQuizService {
