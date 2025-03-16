@@ -30,10 +30,10 @@ export class ParseQuizService {
     async parseQuizData() {
         try {
             // Парсинг категорий
-            // await this.parseCategory()
+            await this.parseCategory()
 
             // Парсинг кол-ва вопросов в категориях
-            // await this.parsingNumberOfQuestions()
+            await this.parsingNumberOfQuestions()
 
             // Получение Token
             const token: string | null = await this.getToken()
@@ -200,8 +200,13 @@ export class ParseQuizService {
 
         const questions = await this.questionRepository.findAll()
 
+        let iteration = 0
         for (const question of questions) {
+            iteration += 1
             try {
+                if (iteration % 50 === 0) {
+                    await this.sleep(20000)
+                }
                 const translate = await this.translatorService.translateText({
                     from: 'en',
                     to: 'ru',
@@ -235,14 +240,16 @@ export class ParseQuizService {
                 })
             ).text
 
-            const incorrect_answer_ru = incorrect_answer.map(async (answer) => {
-                const data = await this.translatorService.translateText({
-                    from: 'en',
-                    to: 'ru',
-                    text: answer
+            const incorrect_answer_ru = await Promise.all(
+                incorrect_answer.map(async (answer) => {
+                    const data = await this.translatorService.translateText({
+                        from: 'en',
+                        to: 'ru',
+                        text: answer
+                    })
+                    return data.text
                 })
-                return data.text
-            })
+            )
 
             await this.questionRepository.update(question.uuid, {
                 correct_answer_ru,
