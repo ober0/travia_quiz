@@ -26,4 +26,17 @@ export class QuestionRepository {
     async deleteAll() {
         return this.prisma.question.deleteMany({})
     }
+
+    async findAll() {
+        return this.prisma.question.findMany({})
+    }
+
+    async update(uuid: string, data: { question_ru: string }) {
+        return this.prisma.question.update({
+            where: {
+                uuid
+            },
+            data
+        })
+    }
 }

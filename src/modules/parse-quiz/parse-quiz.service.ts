@@ -32,10 +32,10 @@ export class ParseQuizService {
     async parseQuizData() {
         try {
             // Парсинг категорий
-            // await this.parseCategory()
-            //
-            // // Парсинг кол-ва вопросов в категориях
-            // await this.parsingNumberOfQuestions()
+            await this.parseCategory()
+
+            // Парсинг кол-ва вопросов в категориях
+            await this.parsingNumberOfQuestions()
 
             // Получение Token
             const token: string | null = await this.getToken()
@@ -45,6 +45,12 @@ export class ParseQuizService {
 
             // Парсинг вопросов
             await this.parsingQuestion(token)
+
+            // Перевод вопросов
+            await this.translateQuestions()
+
+            // Перевод ответов
+            await this.translateAnswers()
         } catch (error) {
             this.logger.error('Ошибка во время парсинга:', error)
 
@@ -223,5 +229,51 @@ export class ParseQuizService {
         } catch (error) {
             this.logger.error('Ошибка при парсинге вопросов', error)
         }
+    }
+
+    private async translateQuestions() {
+        this.logger.log('Начинаю перевод вопросов...')
+
+        const questions = await this.questionRepository.findAll()
+
+        for (const question of questions) {
+            try {
+                const translate = await this.translatorService.translateText({
+                    from: 'en',
+                    to: 'ru',
+                    text: question.question
+                })
+
+                await this.questionRepository.update(question.uuid, { question_ru: translate.text })
+                this.logger.log(`Переведён вопрос ${question.uuid}`)
+            } catch (error) {
+                this.logger.error(`Ошибка при переводе вопроса ${question.uuid}:`, error)
+            }
+        }
+
+        this.logger.log('Перевод вопросов завершён')
+    }
+
+    private async translateAnswers() {
+        this.logger.log('Начинаю перевод ответов...')
+
+        const answers = await this.answerRepository.getAll()
+
+        for (const answer of answers) {
+            try {
+                const translate = await this.translatorService.translateText({
+                    from: 'en',
+                    to: 'ru',
+                    text: answer.text
+                })
+
+                await this.answerRepository.update(answer.uuid, { text_ru: translate.text })
+                this.logger.log(`Переведён ответ ${answer.uuid}`)
+            } catch (error) {
+                this.logger.error(`Ошибка при переводе вопроса ${answer.uuid}:`, error)
+            }
+        }
+
+        this.logger.log('Перевод вопросов завершён')
     }
 }

@@ -31,4 +31,13 @@ export class AnswerRepository {
     async deleteAll() {
         return this.prisma.answer.deleteMany({})
     }
+
+    async update(uuid: string, data: { text_ru: string }) {
+        return this.prisma.answer.update({
+            where: {
+                uuid
+            },
+            data
+        })
+    }
 }
