@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service'
 export class QuestionRepository {
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(questionData: { category_uuid: string; question: string; question_ru: string; correct_answer_uuid: string; difficulty: string; type: string }) {
+    async create(questionData: { category_uuid: string; question: string; question_ru?: string; correct_answer_uuid: string; difficulty: string; type: string }) {
         return this.prisma.question.create({
             data: questionData
         })

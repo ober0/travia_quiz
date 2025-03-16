@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service'
 export class AnswerRepository {
     constructor(private readonly prisma: PrismaService) {}
 
-    async createMany(answers: { text: string; text_ru: string }[]) {
+    async createMany(answers: { text: string; text_ru?: string }[]) {
         return this.prisma.answer.createMany({
             data: answers,
             skipDuplicates: true

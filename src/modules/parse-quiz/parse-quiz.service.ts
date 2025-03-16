@@ -127,7 +127,7 @@ export class ParseQuizService {
         }
     }
 
-    private async parsingQuestion(token: string, amount: number = 30) {
+    private async parsingQuestion(token: string, amount: number = 50) {
         this.logger.log('Начинаю парсинг вопросов')
 
         try {
@@ -142,7 +142,6 @@ export class ParseQuizService {
 
                 while (remainingQuestions > 0) {
                     this.logger.log(`Обрабатываем категорию ${category.category_id}, осталось вопросов: ${remainingQuestions}`)
-                    await this.sleep(6000)
 
                     const response = await fetch(`${this.baseUrl}/api.php?amount=${Math.min(remainingQuestions, amount)}&category=${category.category_id}&token=${token}`).then((r) => r.json())
 
@@ -151,23 +150,17 @@ export class ParseQuizService {
                     switch (response.response_code) {
                         case 0:
                             for (const data of response.results) {
-                                this.logger.log(`Обрабатываем вопрос: ${data.question}`)
-
                                 // Перевод всех ответов
                                 const answers = await Promise.all(
                                     [data.correct_answer, ...data.incorrect_answers].map(async (answer) => {
-                                        const translatedAnswer = await this.translatorService.translateText({ from: 'en', to: 'ru', text: answer })
                                         return {
-                                            text: answer,
-                                            text_ru: translatedAnswer.text
+                                            text: answer
                                         }
                                     })
                                 )
 
-                                // ✅ Создаём ВСЕ ответы в `Answer`
                                 await this.answerRepository.createMany(answers)
 
-                                // ✅ Получаем `uuid` всех созданных ответов
                                 const createdAnswers = await this.answerRepository.getByTexts(answers.map((a) => a.text))
 
                                 if (!createdAnswers.length) {
@@ -175,33 +168,23 @@ export class ParseQuizService {
                                     continue
                                 }
 
-                                // ✅ Определяем `uuid` правильного ответа
                                 const correctAnswer = createdAnswers.find((ans) => ans.text === data.correct_answer)
                                 if (!correctAnswer) {
                                     this.logger.error('Ошибка: не найден правильный ответ')
                                     continue
                                 }
 
-                                // ✅ Переводим и сохраняем сам вопрос
-                                const question_ru = await this.translatorService.translateText({
-                                    from: 'en',
-                                    to: 'ru',
-                                    text: data.question
-                                })
-
                                 const createdQuestion = await this.questionRepository.create({
                                     difficulty: data.difficulty,
                                     type: data.type,
                                     category_uuid: category.uuid,
                                     question: data.question,
-                                    question_ru: question_ru.text,
                                     correct_answer_uuid: correctAnswer.uuid
                                 })
 
-                                // ✅ Связываем ВСЕ ответы с вопросом в `QuestionAnswer`
                                 await this.questionRepository.createQuestionAnswer(
                                     createdQuestion.uuid,
-                                    createdAnswers.map((ans) => ans.uuid) // Все `uuid` ответов
+                                    createdAnswers.map((ans) => ans.uuid)
                                 )
 
                                 allQuestions.push(createdQuestion)
@@ -233,10 +216,10 @@ export class ParseQuizService {
                             remainingQuestions = 0
                             break
                     }
+
+                    await this.sleep(6000)
                 }
             }
-
-            console.log(allQuestions)
         } catch (error) {
             this.logger.error('Ошибка при парсинге вопросов', error)
         }
