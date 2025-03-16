@@ -18,7 +18,6 @@ import { UserService } from '../user/user.service'
 import { CategoriesRepository } from './repositories/categories.repository'
 import { TranslatorService } from '../translator/translator.service'
 import { QuestionCountRepository } from './repositories/question-count.repository'
-import { AnswerRepository } from './repositories/answers.repository'
 import { QuestionRepository } from './repositories/question.repository'
 
 @Module({
@@ -42,7 +41,6 @@ import { QuestionRepository } from './repositories/question.repository'
         CategoriesRepository,
         TranslatorService,
         QuestionCountRepository,
-        AnswerRepository,
         QuestionRepository
     ],
     controllers: [ParseQuizController]

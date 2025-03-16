@@ -78,35 +78,15 @@ model QuizQuestionCount {
 }
 
 model Question {
-  uuid                String @id @default(uuid())
+  uuid                String       @id @default(uuid())
   category_uuid       String
-  correct_answer_uuid String
-
-  question    String
-  question_ru String?
-
-  category       QuizCategory @relation(fields: [category_uuid], references: [uuid], onDelete: Cascade)
-  correct_answer Answer       @relation(fields: [correct_answer_uuid], references: [uuid], onDelete: Cascade)
-
-  difficulty     String
-  type           String
-  QuestionAnswer QuestionAnswer[]
-}
-
-model Answer {
-  uuid           String           @id @default(uuid())
-  text           String
-  text_ru        String?
-  Question       Question[]
-  QuestionAnswer QuestionAnswer[]
-}
-
-model QuestionAnswer {
-  question_uuid String
-  answer_uuid   String
-
-  question Question @relation(fields: [question_uuid], references: [uuid], onDelete: Cascade)
-  answer   Answer   @relation(fields: [answer_uuid], references: [uuid], onDelete: Cascade)
-
-  @@id([question_uuid, answer_uuid])
+  question            String
+  question_ru         String?
+  category            QuizCategory @relation(fields: [category_uuid], references: [uuid], onDelete: Cascade)
+  correct_answer      String
+  correct_answer_ru   String?
+  difficulty          String
+  type                String
+  incorrect_answer    String[]
+  incorrect_answer_ru String[]     @default([])
 }

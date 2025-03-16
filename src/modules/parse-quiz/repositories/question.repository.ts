@@ -1,25 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../../prisma/prisma.service'
+import { Question } from '@prisma/client'
 
 @Injectable()
 export class QuestionRepository {
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(questionData: { category_uuid: string; question: string; question_ru?: string; correct_answer_uuid: string; difficulty: string; type: string }) {
+    async create(questionData: any) {
         return this.prisma.question.create({
             data: questionData
-        })
-    }
-
-    async createQuestionAnswer(questionUuid: string, answerUuids: string[]) {
-        const questionAnswers = answerUuids.map((answerUuid) => ({
-            question_uuid: questionUuid,
-            answer_uuid: answerUuid
-        }))
-
-        return this.prisma.questionAnswer.createMany({
-            data: questionAnswers,
-            skipDuplicates: true
         })
     }
 
@@ -31,7 +20,7 @@ export class QuestionRepository {
         return this.prisma.question.findMany({})
     }
 
-    async update(uuid: string, data: { question_ru: string }) {
+    async update(uuid: string, data: { question_ru?: string; correct_answer_ru?: string; incorrect_answer_ru?: string[] }) {
         return this.prisma.question.update({
             where: {
                 uuid

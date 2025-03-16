@@ -4,7 +4,6 @@ import { PrismaService } from '../prisma/prisma.service'
 import { CategoriesRepository } from './repositories/categories.repository'
 import { TranslatorService } from '../translator/translator.service'
 import { QuestionCountRepository } from './repositories/question-count.repository'
-import { AnswerRepository } from './repositories/answers.repository'
 import { QuestionRepository } from './repositories/question.repository'
 
 @Injectable()
@@ -18,7 +17,6 @@ export class ParseQuizService {
         private readonly categoriesRepository: CategoriesRepository,
         private readonly translatorService: TranslatorService,
         private readonly questionCountRepository: QuestionCountRepository,
-        private readonly answerRepository: AnswerRepository,
         private readonly questionRepository: QuestionRepository
     ) {}
 
@@ -32,10 +30,10 @@ export class ParseQuizService {
     async parseQuizData() {
         try {
             // Парсинг категорий
-            await this.parseCategory()
+            // await this.parseCategory()
 
             // Парсинг кол-ва вопросов в категориях
-            await this.parsingNumberOfQuestions()
+            // await this.parsingNumberOfQuestions()
 
             // Получение Token
             const token: string | null = await this.getToken()
@@ -138,10 +136,6 @@ export class ParseQuizService {
 
         try {
             const categories = await this.categoriesRepository.getAll()
-            await this.answerRepository.deleteAll()
-            await this.questionRepository.deleteAll()
-
-            const allQuestions = []
 
             for (const category of categories) {
                 let remainingQuestions = (await this.questionCountRepository.findById(category.uuid)).count
@@ -156,44 +150,14 @@ export class ParseQuizService {
                     switch (response.response_code) {
                         case 0:
                             for (const data of response.results) {
-                                // Перевод всех ответов
-                                const answers = await Promise.all(
-                                    [data.correct_answer, ...data.incorrect_answers].map(async (answer) => {
-                                        return {
-                                            text: answer
-                                        }
-                                    })
-                                )
-
-                                await this.answerRepository.createMany(answers)
-
-                                const createdAnswers = await this.answerRepository.getByTexts(answers.map((a) => a.text))
-
-                                if (!createdAnswers.length) {
-                                    this.logger.error('Ошибка: ответы не были сохранены')
-                                    continue
-                                }
-
-                                const correctAnswer = createdAnswers.find((ans) => ans.text === data.correct_answer)
-                                if (!correctAnswer) {
-                                    this.logger.error('Ошибка: не найден правильный ответ')
-                                    continue
-                                }
-
-                                const createdQuestion = await this.questionRepository.create({
+                                await this.questionRepository.create({
                                     difficulty: data.difficulty,
                                     type: data.type,
                                     category_uuid: category.uuid,
                                     question: data.question,
-                                    correct_answer_uuid: correctAnswer.uuid
+                                    correct_answer: data.correct_answer,
+                                    incorrect_answer: data.incorrect_answers
                                 })
-
-                                await this.questionRepository.createQuestionAnswer(
-                                    createdQuestion.uuid,
-                                    createdAnswers.map((ans) => ans.uuid)
-                                )
-
-                                allQuestions.push(createdQuestion)
                             }
 
                             remainingQuestions -= response.results.length
@@ -257,23 +221,35 @@ export class ParseQuizService {
     private async translateAnswers() {
         this.logger.log('Начинаю перевод ответов...')
 
-        const answers = await this.answerRepository.getAll()
+        const questions = await this.questionRepository.findAll()
 
-        for (const answer of answers) {
-            try {
-                const translate = await this.translatorService.translateText({
+        for (const question of questions) {
+            const correct_answer = question.correct_answer
+            const incorrect_answer = question.incorrect_answer
+
+            const correct_answer_ru = (
+                await this.translatorService.translateText({
                     from: 'en',
                     to: 'ru',
-                    text: answer.text
+                    text: correct_answer
                 })
+            ).text
 
-                await this.answerRepository.update(answer.uuid, { text_ru: translate.text })
-                this.logger.log(`Переведён ответ ${answer.uuid}`)
-            } catch (error) {
-                this.logger.error(`Ошибка при переводе вопроса ${answer.uuid}:`, error)
-            }
+            const incorrect_answer_ru = incorrect_answer.map(async (answer) => {
+                const data = await this.translatorService.translateText({
+                    from: 'en',
+                    to: 'ru',
+                    text: answer
+                })
+                return data.text
+            })
+
+            await this.questionRepository.update(question.uuid, {
+                correct_answer_ru,
+                incorrect_answer_ru
+            })
         }
 
-        this.logger.log('Перевод вопросов завершён')
+        this.logger.log('Перевод ответов завершён')
     }
 }
