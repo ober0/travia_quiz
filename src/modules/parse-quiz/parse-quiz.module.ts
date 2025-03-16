@@ -17,6 +17,7 @@ import { PermissionRepository } from '../permission/permission.repository'
 import { UserService } from '../user/user.service'
 import { CategoriesRepository } from './categories.repository'
 import { TranslatorService } from '../translator/translator.service'
+import { QuestionCountRepository } from './question-count.repository'
 
 @Module({
     imports: [ScheduleModule.forRoot()],
@@ -37,7 +38,8 @@ import { TranslatorService } from '../translator/translator.service'
         RedisService,
         CryptService,
         CategoriesRepository,
-        TranslatorService
+        TranslatorService,
+        QuestionCountRepository
     ],
     controllers: [ParseQuizController]
 })
