@@ -16,6 +16,7 @@ import { PermissionService } from '../permission/permission.service'
 import { PermissionRepository } from '../permission/permission.repository'
 import { UserService } from '../user/user.service'
 import { CategoriesRepository } from './categories.repository'
+import { TranslatorService } from '../translator/translator.service'
 
 @Module({
     imports: [ScheduleModule.forRoot()],
@@ -35,7 +36,8 @@ import { CategoriesRepository } from './categories.repository'
         SmtpService,
         RedisService,
         CryptService,
-        CategoriesRepository
+        CategoriesRepository,
+        TranslatorService
     ],
     controllers: [ParseQuizController]
 })

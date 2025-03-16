@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Cron } from '@nestjs/schedule'
 import { PrismaService } from '../prisma/prisma.service'
 import { CategoriesRepository } from './categories.repository'
+import { TranslatorService } from '../translator/translator.service'
 
 @Injectable()
 export class ParseQuizService {
@@ -11,7 +12,8 @@ export class ParseQuizService {
 
     constructor(
         private readonly prisma: PrismaService,
-        private readonly categoriesRepository: CategoriesRepository
+        private readonly categoriesRepository: CategoriesRepository,
+        private readonly translatorService: TranslatorService
     ) {}
 
     @Cron('0 0 * * *') // Каждый день в 00:00
@@ -29,10 +31,20 @@ export class ParseQuizService {
         try {
             const response = await fetch(`${this.baseUrl}/api_category.php`).then((r) => r.json())
 
-            const categories = response.trivia_categories.map((category) => ({
-                category_id: category.id,
-                category_name: category.name
-            }))
+            const categories = await Promise.all(
+                response.trivia_categories.map(async (category) => {
+                    const category_name_ru = await this.translatorService.translateText({
+                        from: 'en',
+                        to: 'ru',
+                        text: category.name
+                    })
+                    return {
+                        category_id: category.id,
+                        category_name: category.name,
+                        category_name_ru: category_name_ru.text
+                    }
+                })
+            )
 
             await this.categoriesRepository.deleteAll()
             await this.categoriesRepository.createMany(categories)
