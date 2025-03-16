@@ -63,6 +63,7 @@ model QuizCategory {
   uuid              String             @id @default(uuid())
   category_id       Int                @unique
   category_name     String
+  category_name_ru  String?
   QuizQuestionCount QuizQuestionCount?
   Question          Question[]
 }
@@ -81,6 +82,9 @@ model Question {
   category_uuid       String
   correct_answer_uuid String
 
+  question    String
+  question_ru String?
+
   category       QuizCategory @relation(fields: [category_uuid], references: [uuid], onDelete: Cascade)
   correct_answer Answer       @relation(fields: [correct_answer_uuid], references: [uuid], onDelete: Cascade)
 
@@ -92,6 +96,7 @@ model Question {
 model Answer {
   uuid           String           @id @default(uuid())
   text           String
+  text_ru        String?
   Question       Question[]
   QuestionAnswer QuestionAnswer[]
 }
