@@ -20,6 +20,14 @@ export class QuestionRepository {
         return this.prisma.question.findMany({})
     }
 
+    async findAllNotTranslates() {
+        return this.prisma.question.findMany({
+            where: {
+                question_ru: null
+            }
+        })
+    }
+
     async update(uuid: string, data: { question_ru?: string; correct_answer_ru?: string; incorrect_answer_ru?: string[] }) {
         return this.prisma.question.update({
             where: {
