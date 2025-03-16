@@ -18,6 +18,8 @@ import { UserService } from '../user/user.service'
 import { CategoriesRepository } from './repositories/categories.repository'
 import { TranslatorService } from '../translator/translator.service'
 import { QuestionCountRepository } from './repositories/question-count.repository'
+import { AnswerRepository } from './repositories/answers.repository'
+import { QuestionRepository } from './repositories/question.repository'
 
 @Module({
     imports: [ScheduleModule.forRoot()],
@@ -39,7 +41,9 @@ import { QuestionCountRepository } from './repositories/question-count.repositor
         CryptService,
         CategoriesRepository,
         TranslatorService,
-        QuestionCountRepository
+        QuestionCountRepository,
+        AnswerRepository,
+        QuestionRepository
     ],
     controllers: [ParseQuizController]
 })
