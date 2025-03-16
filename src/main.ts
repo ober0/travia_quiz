@@ -19,7 +19,7 @@ async function bootstrap() {
     const config = new DocumentBuilder()
         .setTitle('API Documentation')
         .setDescription('Документация для API')
-        .setVersion('1.0')
+        .setVersion('0.1')
         .addBearerAuth({
             type: 'http',
             scheme: 'bearer',

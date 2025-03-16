@@ -1,0 +1,76 @@
+name: Auto Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies and build the project
+        run: |
+          npm install
+          npm run build
+
+
+      - name: Connect to the server and deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            # Экспортируем переменные окружения
+            export DATABASE_URL=${{ secrets.DATABASE_URL }}
+            export PORT=${{ secrets.PORT }}
+            export REDIS_URL=${{ secrets.REDIS_URL }}
+            export SMTP_USER=${{ secrets.SMTP_USER }}
+            export SMTP_PASS=${{ secrets.SMTP_PASS }}
+            export SMTP_SERVICE=${{ secrets.SMTP_SERVICE }}
+            export ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
+            export REFRESH_SECRET=${{ secrets.REFRESH_SECRET }}
+            export ACCESS_SECRET=${{ secrets.ACCESS_SECRET }}
+
+            # Переходим в директорию проекта
+            cd /var/www/backend-travia-quiz
+
+            # Обновляем репозиторий
+            git pull https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/ober0/travia_quiz.git
+
+            # Устанавливаем зависимости
+            npm install
+
+            # Применяем миграции Prisma
+            npx prisma migrate deploy
+            if [ $? -ne 0 ]; then
+              echo "Prisma migration failed" && exit 1
+            else
+              echo "Prisma migrations successful"
+            fi
+
+            # Генерируем Prisma
+            npx prisma generate
+            if [ $? -ne 0 ]; then
+              echo "Prisma generation failed" && exit 1
+            else
+              echo "Prisma generation successful"
+            fi
+
+            # Выполняем seed
+            npm run seed
+
+            # Перезапускаем приложение через pm2
+            pm2 restart backend-travia-quiz --silent
+            if [ $? -ne 0 ]; then
+              echo "PM2 restart failed" && exit 1
+            else
+              echo "PM2 restart successful"
+            fi
