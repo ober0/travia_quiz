@@ -11,9 +11,10 @@ import { UserModule } from '../user/user.module'
 import { ConfigModule } from '@nestjs/config'
 import config from 'src/config/config'
 import { AvatarModule } from '../user/avatar/avatar.module'
+import { ParseQuizModule } from '../parse-quiz/parse-quiz.module'
 
 @Module({
-    imports: [PrismaModule, RedisModule, CryptModule, PasswordModule, SmtpModule, UserModule, AuthModule, ConfigModule.forRoot({ isGlobal: true, load: [config] }), AvatarModule],
+    imports: [PrismaModule, RedisModule, CryptModule, PasswordModule, SmtpModule, UserModule, AuthModule, ParseQuizModule, ConfigModule.forRoot({ isGlobal: true, load: [config] }), AvatarModule],
     controllers: [AppController],
     providers: [AppService]
 })
