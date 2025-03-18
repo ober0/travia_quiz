@@ -42,7 +42,7 @@ export class ParseQuizService {
             }
 
             // // Парсинг вопросов
-            await this.parsingQuestion(token)
+            // await this.parsingQuestion(token)
 
             // Перевод категорий
             await this.translateCategory()
