@@ -28,6 +28,14 @@ export class QuestionRepository {
         })
     }
 
+    async findAllAnswersNotTranslates() {
+        return this.prisma.question.findMany({
+            where: {
+                correct_answer_ru: null
+            }
+        })
+    }
+
     async update(uuid: string, data: { question_ru?: string; correct_answer_ru?: string; incorrect_answer_ru?: string[] }) {
         return this.prisma.question.update({
             where: {

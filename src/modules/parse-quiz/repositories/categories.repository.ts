@@ -23,6 +23,23 @@ export class CategoriesRepository {
         })
     }
 
+    async findAllNotTranslates() {
+        return this.prisma.quizCategory.findMany({
+            where: {
+                category_name_ru: null
+            }
+        })
+    }
+
+    async update(uuid: string, data: { category_name_ru?: string }) {
+        return this.prisma.quizCategory.update({
+            where: {
+                uuid
+            },
+            data
+        })
+    }
+
     async deleteAll() {
         return this.prisma.quizCategory.deleteMany()
     }

@@ -44,8 +44,13 @@ export class ParseQuizService {
             // // Парсинг вопросов
             // await this.parsingQuestion(token)
 
-            // Перевод вопросов и ответов
-            await this.translateQuestionsV2()
+            // Перевод категорий
+            // await this.translateCategory()
+            // Перевод вопросов
+            // await this.translateQuestions()
+
+            // Перевод ответов
+            await this.transalateAnswers()
         } catch (error) {
             this.logger.error('Ошибка во время парсинга:', error)
 
@@ -214,7 +219,62 @@ export class ParseQuizService {
         return result
     }
 
-    async translateQuestionsV2() {
+    async transalateAnswers() {
+        this.logger.log('Начинаю перевод ответов...')
+
+        const answers = await this.questionRepository.findAllAnswersNotTranslates()
+
+        const data = await Promise.all(
+            answers.map(async (answer) => {
+                return {
+                    id: answer.uuid,
+                    text: [answer.correct_answer, ...answer.incorrect_answer]
+                }
+            })
+        )
+        const translatedData = await this.transalateData(data)
+        console.log(translatedData)
+
+        await Promise.all(
+            translatedData.map(async (data) => {
+                await this.questionRepository.update(data.uuid, {
+                    correct_answer_ru: data.text.at(0),
+                    incorrect_answer_ru: data.text.slice(1)
+                })
+            })
+        )
+
+        this.logger.log('Перевод ответов завершён')
+    }
+
+    async translateCategory() {
+        this.logger.log('Начинаю перевод категорий...')
+
+        const categories = await this.categoriesRepository.findAllNotTranslates()
+
+        const data = await Promise.all(
+            categories.map(async (category) => {
+                return {
+                    id: category.uuid,
+                    text: [category.category_name]
+                }
+            })
+        )
+        const translatedData = await this.transalateData(data)
+        console.log(translatedData)
+
+        await Promise.all(
+            translatedData.map(async (data) => {
+                await this.categoriesRepository.update(data.uuid, {
+                    category_name_ru: data.text.at(0)
+                })
+            })
+        )
+
+        this.logger.log('Перевод категорий завершён')
+    }
+
+    async translateQuestions() {
         this.logger.log('Начинаю перевод вопросов...')
 
         const questions = await this.questionRepository.findAllNotTranslates()
