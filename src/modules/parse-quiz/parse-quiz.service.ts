@@ -30,22 +30,22 @@ export class ParseQuizService {
     async parseQuizData() {
         try {
             // Парсинг категорий
-            await this.parseCategory()
+            // await this.parseCategory()
 
             // Парсинг кол-ва вопросов в категориях
-            await this.parsingNumberOfQuestions()
+            // await this.parsingNumberOfQuestions()
 
             // Получение Token
-            const token: string | null = await this.getToken()
-            if (!token) {
-                throw new InternalServerErrorException('Не удалось получить токен')
-            }
-
-            // Парсинг вопросов
-            await this.parsingQuestion(token)
+            // const token: string | null = await this.getToken()
+            // if (!token) {
+            //     throw new InternalServerErrorException('Не удалось получить токен')
+            // }
+            //
+            // // Парсинг вопросов
+            // await this.parsingQuestion(token)
 
             // Перевод вопросов и ответов
-            await this.translateQuestions()
+            await this.translateQuestionsV2()
         } catch (error) {
             this.logger.error('Ошибка во время парсинга:', error)
 
@@ -67,15 +67,15 @@ export class ParseQuizService {
 
             const categories = await Promise.all(
                 response.trivia_categories.map(async (category) => {
-                    const category_name_ru = await this.translatorService.translateText({
-                        from: 'en',
-                        to: 'ru',
-                        text: category.name
-                    })
+                    // const category_name_ru = await this.translatorService.translateText({
+                    //     from: 'en',
+                    //     to: 'ru',
+                    //     text: category.name
+                    // })
                     return {
                         category_id: category.id,
-                        category_name: category.name,
-                        category_name_ru: category_name_ru.text
+                        category_name: category.name
+                        // category_name_ru: category_name_ru.text
                     }
                 })
             )
@@ -131,6 +131,7 @@ export class ParseQuizService {
     private async parsingQuestion(token: string, amount: number = 50) {
         this.logger.log('Начинаю парсинг вопросов')
 
+        await this.questionRepository.deleteAll()
         try {
             const categories = await this.categoriesRepository.getAll()
 
@@ -192,79 +193,97 @@ export class ParseQuizService {
         }
     }
 
-    private async translateQuestions() {
+    private async transalateData(data: any) {
+        const batchSize = 100
+        const result = []
+
+        for (let i = 0; i < data.length; i += batchSize) {
+            this.logger.log(`Перевод в процессе...`)
+            const batch = data.slice(i, i + batchSize)
+            const translatorResponse = await this.translatorService.translateText({ data: JSON.stringify(batch) })
+
+            const parsedData = JSON.parse(translatorResponse)
+            const batchResult = parsedData.entries.map((entry) => ({
+                uuid: entry.id,
+                text: entry.text
+            }))
+
+            result.push(...batchResult)
+        }
+        this.logger.log('Перевод получен, сохранение...')
+        return result
+    }
+
+    async translateQuestionsV2() {
         this.logger.log('Начинаю перевод вопросов...')
 
         const questions = await this.questionRepository.findAllNotTranslates()
 
-        for (const question of questions) {
-            try {
-                const translate = await this.translatorService.translateText({
-                    from: 'en',
-                    to: 'ru',
-                    text: question.question
-                })
-                if (translate?.status !== 'OK') {
-                    setTimeout(() => this.translateQuestions(), 3600000)
-                    return
+        const data = await Promise.all(
+            questions.map(async (question) => {
+                return {
+                    id: question.uuid,
+                    text: [question.question]
                 }
-                await this.questionRepository.update(question.uuid, { question_ru: translate.text })
-                this.logger.log(`Переведён вопрос ${question.uuid}`)
-            } catch (error) {
-                this.logger.error(`Ошибка при переводе вопроса ${question.uuid}:`, error)
-                setTimeout(() => this.translateQuestions(), 3600000)
-                return
-            }
-        }
+            })
+        )
+        const traslatedData = await this.transalateData(data)
+        console.log(traslatedData)
+
+        await Promise.all(
+            traslatedData.map(async (data) => {
+                await this.questionRepository.update(data.uuid, {
+                    question_ru: data.text.at(0)
+                })
+            })
+        )
 
         this.logger.log('Перевод вопросов завершён')
-
-        await this.translateAnswers()
     }
 
-    private async translateAnswers() {
-        this.logger.log('Начинаю перевод ответов...')
-
-        const questions = await this.questionRepository.findAll()
-
-        for (const question of questions) {
-            const correct_answer = question.correct_answer
-            const incorrect_answer = question.incorrect_answer
-
-            try {
-                const correct_answer_ru = await this.translatorService.translateText({
-                    from: 'en',
-                    to: 'ru',
-                    text: correct_answer
-                })
-
-                if (correct_answer_ru?.status !== 'OK') {
-                    setTimeout(() => this.translateAnswers(), 3600000)
-                    return
-                }
-
-                const incorrect_answer_ru = await Promise.all(
-                    incorrect_answer.map(async (answer) => {
-                        const data = await this.translatorService.translateText({
-                            from: 'en',
-                            to: 'ru',
-                            text: answer
-                        })
-                        return data.text
-                    })
-                )
-
-                await this.questionRepository.update(question.uuid, {
-                    correct_answer_ru: correct_answer_ru.text,
-                    incorrect_answer_ru
-                })
-            } catch (error) {
-                this.logger.error(`Ошибка при переводе ответа:`, error)
-                setTimeout(() => this.translateAnswers(), 3600000)
-                return
-            }
-        }
-
-        this.logger.log('Перевод ответов завершён')
-    }
+    // private async translateAnswers() {
+    //     this.logger.log('Начинаю перевод ответов...')
+    //
+    //     const questions = await this.questionRepository.findAll()
+    //
+    //     for (const question of questions) {
+    //         const correct_answer = question.correct_answer
+    //         const incorrect_answer = question.incorrect_answer
+    //
+    //         try {
+    //             const correct_answer_ru = await this.translatorService.translateText({
+    //                 from: 'en',
+    //                 to: 'ru',
+    //                 text: correct_answer
+    //             })
+    //
+    //             if (correct_answer_ru?.status !== 'OK') {
+    //                 setTimeout(() => this.translateAnswers(), 3600000)
+    //                 return
+    //             }
+    //
+    //             const incorrect_answer_ru = await Promise.all(
+    //                 incorrect_answer.map(async (answer) => {
+    //                     const data = await this.translatorService.translateText({
+    //                         from: 'en',
+    //                         to: 'ru',
+    //                         text: answer
+    //                     })
+    //                     return data.text
+    //                 })
+    //             )
+    //
+    //             await this.questionRepository.update(question.uuid, {
+    //                 correct_answer_ru: correct_answer_ru.text,
+    //                 incorrect_answer_ru
+    //             })
+    //         } catch (error) {
+    //             this.logger.error(`Ошибка при переводе ответа:`, error)
+    //             setTimeout(() => this.translateAnswers(), 3600000)
+    //             return
+    //         }
+    //     }
+    //
+    //     this.logger.log('Перевод ответов завершён')
+    // }
 }

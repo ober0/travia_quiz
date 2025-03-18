@@ -23,10 +23,10 @@ import { TranslatorModule } from '../translator/translator.module'
         SmtpModule,
         UserModule,
         AuthModule,
-        ParseQuizModule,
         ConfigModule.forRoot({ isGlobal: true, load: [config] }),
         AvatarModule,
-        TranslatorModule
+        TranslatorModule,
+        ParseQuizModule
     ],
     controllers: [AppController],
     providers: [AppService]
