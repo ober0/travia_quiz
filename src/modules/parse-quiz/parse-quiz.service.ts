@@ -30,10 +30,10 @@ export class ParseQuizService {
     async parseQuizData() {
         try {
             // Парсинг категорий
-            // await this.parseCategory()
+            await this.parseCategory()
 
             // Парсинг кол-ва вопросов в категориях
-            // await this.parsingNumberOfQuestions()
+            await this.parsingNumberOfQuestions()
 
             // Получение Token
             const token: string | null = await this.getToken()
@@ -42,7 +42,7 @@ export class ParseQuizService {
             }
 
             // // Парсинг вопросов
-            // await this.parsingQuestion(token)
+            await this.parsingQuestion(token)
 
             // Перевод категорий
             await this.translateCategory()
