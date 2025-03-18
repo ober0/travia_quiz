@@ -30,24 +30,24 @@ export class ParseQuizService {
     async parseQuizData() {
         try {
             // Парсинг категорий
-            // await this.parseCategory()
+            await this.parseCategory()
 
             // Парсинг кол-ва вопросов в категориях
-            // await this.parsingNumberOfQuestions()
+            await this.parsingNumberOfQuestions()
 
             // Получение Token
-            // const token: string | null = await this.getToken()
-            // if (!token) {
-            //     throw new InternalServerErrorException('Не удалось получить токен')
-            // }
-            //
+            const token: string | null = await this.getToken()
+            if (!token) {
+                throw new InternalServerErrorException('Не удалось получить токен')
+            }
+
             // // Парсинг вопросов
-            // await this.parsingQuestion(token)
+            await this.parsingQuestion(token)
 
             // Перевод категорий
-            // await this.translateCategory()
+            await this.translateCategory()
             // Перевод вопросов
-            // await this.translateQuestions()
+            await this.translateQuestions()
 
             // Перевод ответов
             await this.transalateAnswers()
@@ -233,7 +233,6 @@ export class ParseQuizService {
             })
         )
         const translatedData = await this.transalateData(data)
-        console.log(translatedData)
 
         await Promise.all(
             translatedData.map(async (data) => {
@@ -261,7 +260,6 @@ export class ParseQuizService {
             })
         )
         const translatedData = await this.transalateData(data)
-        console.log(translatedData)
 
         await Promise.all(
             translatedData.map(async (data) => {
@@ -288,7 +286,6 @@ export class ParseQuizService {
             })
         )
         const traslatedData = await this.transalateData(data)
-        console.log(traslatedData)
 
         await Promise.all(
             traslatedData.map(async (data) => {
@@ -300,50 +297,4 @@ export class ParseQuizService {
 
         this.logger.log('Перевод вопросов завершён')
     }
-
-    // private async translateAnswers() {
-    //     this.logger.log('Начинаю перевод ответов...')
-    //
-    //     const questions = await this.questionRepository.findAll()
-    //
-    //     for (const question of questions) {
-    //         const correct_answer = question.correct_answer
-    //         const incorrect_answer = question.incorrect_answer
-    //
-    //         try {
-    //             const correct_answer_ru = await this.translatorService.translateText({
-    //                 from: 'en',
-    //                 to: 'ru',
-    //                 text: correct_answer
-    //             })
-    //
-    //             if (correct_answer_ru?.status !== 'OK') {
-    //                 setTimeout(() => this.translateAnswers(), 3600000)
-    //                 return
-    //             }
-    //
-    //             const incorrect_answer_ru = await Promise.all(
-    //                 incorrect_answer.map(async (answer) => {
-    //                     const data = await this.translatorService.translateText({
-    //                         from: 'en',
-    //                         to: 'ru',
-    //                         text: answer
-    //                     })
-    //                     return data.text
-    //                 })
-    //             )
-    //
-    //             await this.questionRepository.update(question.uuid, {
-    //                 correct_answer_ru: correct_answer_ru.text,
-    //                 incorrect_answer_ru
-    //             })
-    //         } catch (error) {
-    //             this.logger.error(`Ошибка при переводе ответа:`, error)
-    //             setTimeout(() => this.translateAnswers(), 3600000)
-    //             return
-    //         }
-    //     }
-    //
-    //     this.logger.log('Перевод ответов завершён')
-    // }
 }
