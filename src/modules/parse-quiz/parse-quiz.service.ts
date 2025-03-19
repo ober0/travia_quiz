@@ -23,10 +23,10 @@ export class ParseQuizService {
     async parseQuizData() {
         try {
             // Парсинг категорий
-            // await this.parseCategory()
+            await this.parseCategory()
 
             // Парсинг кол-ва вопросов в категориях
-            // await this.parsingNumberOfQuestions()
+            await this.parsingNumberOfQuestions()
 
             // Получение Token
             const token: string | null = await this.getToken()
@@ -222,10 +222,14 @@ export class ParseQuizService {
 
         await Promise.all(
             translatedData.map(async (data) => {
-                await this.questionRepository.update(data.uuid, {
-                    correct_answer_ru: data.text.at(0),
-                    incorrect_answer_ru: data.text.slice(1)
-                })
+                try {
+                    await this.questionRepository.update(data.uuid, {
+                        correct_answer_ru: data.text.at(0),
+                        incorrect_answer_ru: data.text.slice(1)
+                    })
+                } catch (error) {
+                    this.logger.error(error)
+                }
             })
         )
 
@@ -280,9 +284,13 @@ export class ParseQuizService {
 
         await Promise.all(
             traslatedData.map(async (data) => {
-                await this.questionRepository.update(data.uuid, {
-                    question_ru: data.text.at(0)
-                })
+                try {
+                    await this.questionRepository.update(data.uuid, {
+                        question_ru: data.text.at(0)
+                    })
+                } catch (error) {
+                    this.logger.error(error)
+                }
             })
         )
 
