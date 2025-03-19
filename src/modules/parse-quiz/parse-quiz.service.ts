@@ -20,20 +20,13 @@ export class ParseQuizService {
         private readonly questionRepository: QuestionRepository
     ) {}
 
-    @Cron('0 0 1,15 * *')
-    async handleCron() {
-        this.logger.log('Запускаю парсинг вопросов...')
-        await this.parseQuizData()
-        this.logger.log('Парсинг вопросов завершен')
-    }
-
     async parseQuizData() {
         try {
             // Парсинг категорий
-            await this.parseCategory()
+            // await this.parseCategory()
 
             // Парсинг кол-ва вопросов в категориях
-            await this.parsingNumberOfQuestions()
+            // await this.parsingNumberOfQuestions()
 
             // Получение Token
             const token: string | null = await this.getToken()
@@ -53,11 +46,6 @@ export class ParseQuizService {
             await this.transalateAnswers()
         } catch (error) {
             this.logger.error('Ошибка во время парсинга:', error)
-
-            setTimeout(() => {
-                this.logger.log('Повторный запуск парсинга через 1 минуту...')
-                this.parseQuizData()
-            }, 60000)
         }
     }
 
@@ -72,15 +60,9 @@ export class ParseQuizService {
 
             const categories = await Promise.all(
                 response.trivia_categories.map(async (category) => {
-                    // const category_name_ru = await this.translatorService.translateText({
-                    //     from: 'en',
-                    //     to: 'ru',
-                    //     text: category.name
-                    // })
                     return {
                         category_id: category.id,
                         category_name: category.name
-                        // category_name_ru: category_name_ru.text
                     }
                 })
             )
@@ -199,21 +181,25 @@ export class ParseQuizService {
     }
 
     private async transalateData(data: any) {
-        const batchSize = 100
+        const batchSize = 250
         const result = []
 
         for (let i = 0; i < data.length; i += batchSize) {
-            this.logger.log(`Перевод в процессе...`)
-            const batch = data.slice(i, i + batchSize)
-            const translatorResponse = await this.translatorService.translateText({ data: JSON.stringify(batch) })
+            try {
+                this.logger.log(`Перевод в процессе...`)
+                const batch = data.slice(i, i + batchSize)
+                const translatorResponse = await this.translatorService.translateText({ data: JSON.stringify(batch) })
 
-            const parsedData = JSON.parse(translatorResponse)
-            const batchResult = parsedData.entries.map((entry) => ({
-                uuid: entry.id,
-                text: entry.text
-            }))
+                const parsedData = JSON.parse(translatorResponse)
+                const batchResult = parsedData.entries.map((entry) => ({
+                    uuid: entry.id,
+                    text: entry.text
+                }))
 
-            result.push(...batchResult)
+                result.push(...batchResult)
+            } catch (error) {
+                this.logger.error(error)
+            }
         }
         this.logger.log('Перевод получен, сохранение...')
         return result
@@ -259,13 +245,18 @@ export class ParseQuizService {
                 }
             })
         )
+
         const translatedData = await this.transalateData(data)
 
         await Promise.all(
             translatedData.map(async (data) => {
-                await this.categoriesRepository.update(data.uuid, {
-                    category_name_ru: data.text.at(0)
-                })
+                try {
+                    await this.categoriesRepository.update(data.uuid, {
+                        category_name_ru: data.text.at(0)
+                    })
+                } catch (error) {
+                    this.logger.error(error)
+                }
             })
         )
 
