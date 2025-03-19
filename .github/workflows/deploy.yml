@@ -38,6 +38,7 @@ jobs:
             export ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
             export REFRESH_SECRET=${{ secrets.REFRESH_SECRET }}
             export ACCESS_SECRET=${{ secrets.ACCESS_SECRET }}
+            export UPDATE_PASSWORD=${{ secrets.UPDATE_PASSWORD }}
 
             # Переходим в директорию проекта
             cd /var/www/backend-travia-quiz
