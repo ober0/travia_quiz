@@ -15,6 +15,6 @@ export class AnswerDto {
 }
 
 export class CheckAnswersDto {
-    @ApiProperty()
+    @ApiProperty({ type: [AnswerDto] })
     data: AnswerDto[]
 }
