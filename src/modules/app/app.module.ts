@@ -13,6 +13,7 @@ import config from 'src/config/config'
 import { AvatarModule } from '../user/avatar/avatar.module'
 import { ParseQuizModule } from '../parse-quiz/parse-quiz.module'
 import { TranslatorModule } from '../translator/translator.module'
+import { QuestionModule } from '../question/question.module'
 
 @Module({
     imports: [
@@ -26,7 +27,8 @@ import { TranslatorModule } from '../translator/translator.module'
         ConfigModule.forRoot({ isGlobal: true, load: [config] }),
         AvatarModule,
         TranslatorModule,
-        ParseQuizModule
+        ParseQuizModule,
+        QuestionModule
     ],
     controllers: [AppController],
     providers: [AppService]
