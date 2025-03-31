@@ -3,7 +3,7 @@ import { IsOptional } from 'class-validator'
 import { ComplexityEnum } from '../enums/complexity.enum'
 import { QuestionTypesEnum } from '../enums/question-types.enum'
 
-export class QuestionSearchDto {
+export class QuestionBaseDto {
     @ApiProperty({ required: false })
     @IsOptional()
     complexity?: ComplexityEnum
@@ -15,7 +15,9 @@ export class QuestionSearchDto {
     @ApiProperty({ required: false })
     @IsOptional()
     category_uuid?: string
+}
 
+export class QuestionSearchDto extends QuestionBaseDto {
     @ApiProperty({ required: true })
     limit: 10 | 15 | 20
 }

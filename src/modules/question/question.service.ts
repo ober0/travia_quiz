@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { ComplexityEnum } from './enums/complexity.enum'
-import { QuestionSearchDto } from './dto/search.dto'
+import { QuestionBaseDto, QuestionSearchDto } from './dto/search.dto'
 import { QuestionRepository } from './question.repository'
 import { QuestionTypesEnum } from './enums/question-types.enum'
 
@@ -17,6 +17,33 @@ export class QuestionService {
     }
 
     async getQuestions(dto: QuestionSearchDto) {
-        return this.repository.find(dto)
+        const allQuestions = await this.repository.find(dto)
+
+        const randomQuestions = allQuestions.sort(() => Math.random() - 0.5).slice(0, dto.limit)
+
+        return randomQuestions.map((question) => {
+            return {
+                uuid: question.uuid,
+                info: {
+                    category_uuid: question.category_uuid,
+                    difficulty: question.difficulty,
+                    type: question.type
+                },
+                data: {
+                    question: {
+                        ru: question.question_ru,
+                        en: question.question
+                    },
+                    answers: {
+                        ru: [question.correct_answer_ru, ...question.incorrect_answer_ru],
+                        en: [question.correct_answer, ...question.incorrect_answer]
+                    }
+                }
+            }
+        })
+    }
+
+    async getQuestionsCount(dto: QuestionBaseDto) {
+        return this.repository.count(dto)
     }
 }
