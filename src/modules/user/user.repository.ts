@@ -77,7 +77,7 @@ export class UserRepository {
             where: { uuid },
             data: {
                 coins: {
-                    increment: coins
+                    increment: coins || 1
                 }
             }
         })
