@@ -40,4 +40,11 @@ export class QuestionController {
             count: await this.service.getQuestionsCount(dto)
         }
     }
+
+    @Get('reward')
+    @UseGuards(JwtAuthGuard, ActiveGuard)
+    @ApiOperation({ summary: 'Получить сколько монет дается за вопросы ' })
+    async getReward(@Query() dto: QuestionBaseDto) {
+        return this.service.getReward()
+    }
 }

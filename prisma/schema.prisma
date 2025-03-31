@@ -21,6 +21,7 @@ model User {
   lastName       String   @map("last_name")
   email          String   @unique
   hashedPassword String
+  coins          Int      @default(0)
   twoFactor      Boolean  @default(true)
   isForbidden    Boolean  @default(false) @map("is_forbidden")
   isActive       Boolean  @default(true) @map("is_active")

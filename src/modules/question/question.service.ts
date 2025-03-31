@@ -3,6 +3,7 @@ import { ComplexityEnum } from './enums/complexity.enum'
 import { QuestionBaseDto, QuestionSearchDto } from './dto/search.dto'
 import { QuestionRepository } from './question.repository'
 import { QuestionTypesEnum } from './enums/question-types.enum'
+import { CoinsConst } from './consts/coins.const'
 
 @Injectable()
 export class QuestionService {
@@ -45,5 +46,12 @@ export class QuestionService {
 
     async getQuestionsCount(dto: QuestionBaseDto) {
         return this.repository.count(dto)
+    }
+
+    async getReward() {
+        return Object.entries(CoinsConst).map(([complexity, coins]) => ({
+            complexity,
+            coins
+        }))
     }
 }

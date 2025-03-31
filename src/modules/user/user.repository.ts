@@ -71,4 +71,15 @@ export class UserRepository {
             }
         })
     }
+
+    async addCoins(coins: number, uuid: string) {
+        return this.prisma.user.update({
+            where: { uuid },
+            data: {
+                coins: {
+                    increment: coins
+                }
+            }
+        })
+    }
 }

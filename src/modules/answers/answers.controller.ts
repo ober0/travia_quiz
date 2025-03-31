@@ -4,6 +4,8 @@ import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../auth/guards/auth.guard'
 import { ActiveGuard } from '../auth/guards/active.guard'
 import { CheckAnswersDto } from './dto/answers.dto'
+import { JwtPayloadDto } from '../auth/dto'
+import { JwtPayload } from '../auth/decorators/jwt-payload.decorator'
 
 @Controller('answers')
 @ApiTags('Answers')
@@ -15,7 +17,7 @@ export class AnswersController {
     @UseGuards(JwtAuthGuard, ActiveGuard)
     @ApiOperation({ summary: 'Проверка ответов' })
     @HttpCode(200)
-    async checkAnswers(@Body() dto: CheckAnswersDto) {
-        return this.service.checkAnswers(dto)
+    async checkAnswers(@JwtPayload() jwtPayload: JwtPayloadDto, @Body() dto: CheckAnswersDto) {
+        return this.service.checkAnswers(dto, jwtPayload.uuid)
     }
 }
