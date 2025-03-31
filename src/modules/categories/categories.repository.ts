@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../../prisma/prisma.service'
 import { Prisma } from '@prisma/client'
+import { PrismaService } from '../prisma/prisma.service'
 
 @Injectable()
 export class CategoriesRepository {
@@ -42,5 +42,15 @@ export class CategoriesRepository {
 
     async deleteAll() {
         return this.prisma.quizCategory.deleteMany()
+    }
+
+    async getCategories() {
+        return this.prisma.quizCategory.findMany({
+            select: {
+                uuid: true,
+                category_name: true,
+                category_name_ru: true
+            }
+        })
     }
 }

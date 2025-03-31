@@ -15,10 +15,10 @@ import { RoleService } from '../role/role.service'
 import { PermissionService } from '../permission/permission.service'
 import { PermissionRepository } from '../permission/permission.repository'
 import { UserService } from '../user/user.service'
-import { CategoriesRepository } from './repositories/categories.repository'
 import { TranslatorService } from '../translator/translator.service'
 import { QuestionCountRepository } from './repositories/question-count.repository'
 import { QuestionRepository } from './repositories/question.repository'
+import { CategoriesRepository } from '../categories/categories.repository'
 
 @Module({
     imports: [ScheduleModule.forRoot()],

@@ -1,10 +1,10 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common'
 import { Cron } from '@nestjs/schedule'
 import { PrismaService } from '../prisma/prisma.service'
-import { CategoriesRepository } from './repositories/categories.repository'
 import { TranslatorService } from '../translator/translator.service'
 import { QuestionCountRepository } from './repositories/question-count.repository'
 import { QuestionRepository } from './repositories/question.repository'
+import { CategoriesRepository } from '../categories/categories.repository'
 
 @Injectable()
 export class ParseQuizService {

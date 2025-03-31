@@ -14,6 +14,7 @@ import { AvatarModule } from '../user/avatar/avatar.module'
 import { ParseQuizModule } from '../parse-quiz/parse-quiz.module'
 import { TranslatorModule } from '../translator/translator.module'
 import { QuestionModule } from '../question/question.module'
+import { CategoriesModule } from '../categories/categories.module'
 
 @Module({
     imports: [
@@ -28,7 +29,8 @@ import { QuestionModule } from '../question/question.module'
         AvatarModule,
         TranslatorModule,
         ParseQuizModule,
-        QuestionModule
+        QuestionModule,
+        CategoriesModule
     ],
     controllers: [AppController],
     providers: [AppService]
