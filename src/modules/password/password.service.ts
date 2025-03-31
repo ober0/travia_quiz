@@ -4,7 +4,7 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 @Injectable()
 export class PasswordService {
     async hashPassword(password: string): Promise<string> {
-        await this.validate(password)
+        // await this.validate(password)
 
         const salt = await bcrypt.genSalt(2)
         return bcrypt.hash(password, salt)
