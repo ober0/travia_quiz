@@ -42,13 +42,13 @@ export class AuthController {
         return this.authService.signIn(signInDto, request.ip)
     }
 
-    @Post('signin/confirm')
-    @ApiOkResponse({ type: LoginResponseDto })
-    @ApiOperation({ summary: 'Подтверждение входа по email' })
-    @HttpCode(HttpStatus.OK)
-    async confirmSignIn(@Body() confirmUserDto: ConfirmSignUpUserDto, @Req() request: Request) {
-        return this.authService.confirmSignIn(confirmUserDto, request.ip)
-    }
+    // @Post('signin/confirm')
+    // @ApiOkResponse({ type: LoginResponseDto })
+    // @ApiOperation({ summary: 'Подтверждение входа по email' })
+    // @HttpCode(HttpStatus.OK)
+    // async confirmSignIn(@Body() confirmUserDto: ConfirmSignUpUserDto, @Req() request: Request) {
+    //     return this.authService.confirmSignIn(confirmUserDto, request.ip)
+    // }
 
     @Post('refresh')
     @ApiOkResponse({ type: AccessTokenResponseDto })

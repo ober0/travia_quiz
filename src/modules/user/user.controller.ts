@@ -28,20 +28,20 @@ export class UserController {
         return this.userService.update(jwtPayload.uuid, dto)
     }
 
-    @ApiSecurity('bearer')
-    @Post('two-factor-auth')
-    @ApiOperation({ summary: 'Запрос кода для подтверждения Отключения/Включения двухфакторки' })
-    @HttpCode(HttpStatus.OK)
-    @UseGuards(JwtAuthGuard, ActiveGuard)
-    async twoFactorAuth(@Body() twoFactorAuthDto: TwoFactorAuthDto, @JwtPayload() jwtPayload: JwtPayloadDto) {
-        return this.userService.twoFactorAuth(jwtPayload.uuid, twoFactorAuthDto)
-    }
-
-    @ApiSecurity('bearer')
-    @Patch('two-factor-auth')
-    @ApiOperation({ summary: 'Отключение/Включение двухфакторки' })
-    @UseGuards(JwtAuthGuard, ActiveGuard)
-    async confirmTwoFactorAuth(@JwtPayload() jwtPayload: JwtPayloadDto, @Req() req: Request, @Body() dto: ConfirmTwoFactorDto) {
-        return this.userService.confirmTwoFactorAuth(req.ip, jwtPayload.uuid, dto)
-    }
+    // @ApiSecurity('bearer')
+    // @Post('two-factor-auth')
+    // @ApiOperation({ summary: 'Запрос кода для подтверждения Отключения/Включения двухфакторки' })
+    // @HttpCode(HttpStatus.OK)
+    // @UseGuards(JwtAuthGuard, ActiveGuard)
+    // async twoFactorAuth(@Body() twoFactorAuthDto: TwoFactorAuthDto, @JwtPayload() jwtPayload: JwtPayloadDto) {
+    //     return this.userService.twoFactorAuth(jwtPayload.uuid, twoFactorAuthDto)
+    // }
+    //
+    // @ApiSecurity('bearer')
+    // @Patch('two-factor-auth')
+    // @ApiOperation({ summary: 'Отключение/Включение двухфакторки' })
+    // @UseGuards(JwtAuthGuard, ActiveGuard)
+    // async confirmTwoFactorAuth(@JwtPayload() jwtPayload: JwtPayloadDto, @Req() req: Request, @Body() dto: ConfirmTwoFactorDto) {
+    //     return this.userService.confirmTwoFactorAuth(req.ip, jwtPayload.uuid, dto)
+    // }
 }

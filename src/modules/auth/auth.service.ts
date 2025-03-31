@@ -41,7 +41,7 @@ export class AuthService {
 
         const hash: string = await this.generateHash()
 
-        await this.passwordService.validate(userDto.password)
+        // await this.passwordService.validate(userDto.password)
 
         const userData: string = JSON.stringify({ ...userDto, code })
 
@@ -141,70 +141,68 @@ export class AuthService {
             throw new NotFoundException('Пользователь не найден')
         }
 
-        if (user.twoFactor === false) {
-            return {
-                accessToken: await this.tokenService.generateAccessToken(user.uuid, user.email),
-                refreshToken: await this.tokenService.generateRefreshToken(user.uuid, user.email),
-                user
-            }
-        }
-
-        const code: number = this.generateVerificationCode()
-        const hash: string = await this.generateHash()
-
-        const redisData = {
-            email: user.email,
-            uuid: user.uuid,
-            code
-        }
-        const userData: string = JSON.stringify(redisData)
-
-        await this.redis.set(`signin-${hash}`, userData, 300)
-
-        this.smtpService.send(userDto.email, `Ваш код подтверждения: ${code}`, 'Код для подтверждения входа в аккаунт')
-
-        const data: SignUpResponseUserDto = {
-            msg: 'Код отправляется',
-            hash
-        }
-        return data
-    }
-
-    async confirmSignIn(confirmUserDto: ConfirmSignUpUserDto, ip: string) {
-        let usedAttempts = await this.redis.get(`confirm-attempts-${ip}`)
-        if (!usedAttempts || typeof usedAttempts != 'string') {
-            usedAttempts = 0
-        }
-        if (Number(usedAttempts) >= 5) {
-            throw new BadRequestException('Много попыток')
-        }
-
-        const userDataString = await this.redis.get(`signin-${confirmUserDto.hash}`)
-
-        if (!userDataString || typeof userDataString !== 'string') {
-            throw new BadRequestException()
-        }
-
-        const userDataJson = JSON.parse(userDataString)
-        const { code, ...userDto } = userDataJson
-
-        if (Number(code) !== confirmUserDto.code) {
-            await this.redis.incrementWithTTL(`confirm-attempts-${ip}`, 1, 600)
-            throw new BadRequestException('Неверный код')
-        }
-
-        await this.redis.delete(`signin-${confirmUserDto.hash}`)
-
-        this.logger.log(`Пользователь ${userDto.email} выполнил вход`)
-
-        const user = await this.userService.findOneByUuid(userDto.uuid, false)
-
         return {
             accessToken: await this.tokenService.generateAccessToken(user.uuid, user.email),
             refreshToken: await this.tokenService.generateRefreshToken(user.uuid, user.email),
             user
         }
+
+        // const code: number = this.generateVerificationCode()
+        // const hash: string = await this.generateHash()
+        //
+        // const redisData = {
+        //     email: user.email,
+        //     uuid: user.uuid,
+        //     code
+        // }
+        // const userData: string = JSON.stringify(redisData)
+        //
+        // await this.redis.set(`signin-${hash}`, userData, 300)
+        //
+        // this.smtpService.send(userDto.email, `Ваш код подтверждения: ${code}`, 'Код для подтверждения входа в аккаунт')
+        //
+        // const data: SignUpResponseUserDto = {
+        //     msg: 'Код отправляется',
+        //     hash
+        // }
+        // return data
     }
+
+    // async confirmSignIn(confirmUserDto: ConfirmSignUpUserDto, ip: string) {
+    //     let usedAttempts = await this.redis.get(`confirm-attempts-${ip}`)
+    //     if (!usedAttempts || typeof usedAttempts != 'string') {
+    //         usedAttempts = 0
+    //     }
+    //     if (Number(usedAttempts) >= 5) {
+    //         throw new BadRequestException('Много попыток')
+    //     }
+    //
+    //     const userDataString = await this.redis.get(`signin-${confirmUserDto.hash}`)
+    //
+    //     if (!userDataString || typeof userDataString !== 'string') {
+    //         throw new BadRequestException()
+    //     }
+    //
+    //     const userDataJson = JSON.parse(userDataString)
+    //     const { code, ...userDto } = userDataJson
+    //
+    //     if (Number(code) !== confirmUserDto.code) {
+    //         await this.redis.incrementWithTTL(`confirm-attempts-${ip}`, 1, 600)
+    //         throw new BadRequestException('Неверный код')
+    //     }
+    //
+    //     await this.redis.delete(`signin-${confirmUserDto.hash}`)
+    //
+    //     this.logger.log(`Пользователь ${userDto.email} выполнил вход`)
+    //
+    //     const user = await this.userService.findOneByUuid(userDto.uuid, false)
+    //
+    //     return {
+    //         accessToken: await this.tokenService.generateAccessToken(user.uuid, user.email),
+    //         refreshToken: await this.tokenService.generateRefreshToken(user.uuid, user.email),
+    //         user
+    //     }
+    // }
 
     async refresh(refreshToken: string) {
         const payload = await this.tokenService.verifyRefreshToken(refreshToken)
