@@ -64,4 +64,12 @@ export class QuestionRepository {
             }
         })
     }
+
+    async findByUuid(questionUuid: string) {
+        return this.prisma.question.findUnique({
+            where: {
+                uuid: questionUuid
+            }
+        })
+    }
 }

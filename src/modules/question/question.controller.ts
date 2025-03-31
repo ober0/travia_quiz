@@ -12,14 +12,14 @@ export class QuestionController {
     constructor(private readonly service: QuestionService) {}
 
     @Get('complexity')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, ActiveGuard)
     @ApiOperation({ summary: 'Получить имеющиеся сложности' })
     async getComplexity() {
         return this.service.getComplexity()
     }
 
     @Get('types')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, ActiveGuard)
     @ApiOperation({ summary: 'Получить имеющиеся типы' })
     async getTypes() {
         return this.service.getTypes()
