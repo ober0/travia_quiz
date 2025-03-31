@@ -65,10 +65,14 @@ export class QuestionRepository {
                     type: question.type
                 },
                 data: {
-                    questions_ru: question.question_ru,
-                    question: question.question,
-                    answers_ru: [question.correct_answer_ru, ...question.incorrect_answer_ru],
-                    answers: [question.correct_answer, ...question.incorrect_answer]
+                    question: {
+                        ru: question.question_ru,
+                        en: question.question
+                    },
+                    answers: {
+                        ru: [question.correct_answer_ru, ...question.incorrect_answer_ru],
+                        en: [question.correct_answer, ...question.incorrect_answer]
+                    }
                 }
             }
         })
