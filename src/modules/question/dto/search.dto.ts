@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEnum, IsIn, IsNumber, IsOptional } from 'class-validator'
+import { IsEnum, IsIn, IsNumber, IsOptional, Max, Min } from 'class-validator'
 import { ComplexityEnum } from '../enums/complexity.enum'
 import { QuestionTypesEnum } from '../enums/question-types.enum'
 
@@ -18,8 +18,9 @@ export class QuestionBaseDto {
 }
 
 export class QuestionSearchDto extends QuestionBaseDto {
-    @ApiProperty({ required: true, enum: [10, 15, 20] })
-    @IsIn([10, 15, 20])
+    @ApiProperty({ required: true })
+    @Min(10)
+    @Max(20)
     @IsNumber()
-    limit: 10 | 15 | 20
+    limit: number
 }
