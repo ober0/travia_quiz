@@ -35,7 +35,7 @@ export class AuthController {
     }
 
     @Post('signin')
-    @ApiOkResponse({ type: SignInResponseUserDto })
+    @ApiOkResponse({ type: LoginResponseDto })
     @ApiOperation({ summary: 'Вход пользователя' })
     @HttpCode(HttpStatus.OK)
     async signIn(@Body() signInDto: SignInUserDto, @Req() request: Request) {
