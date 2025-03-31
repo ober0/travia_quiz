@@ -23,6 +23,6 @@ export class QuestionSearchDto extends QuestionBaseDto {
     @Type(() => Number)
     @Min(10)
     @Max(20)
-    @IsNumberString()
+    @Number()
     limit: number
 }
