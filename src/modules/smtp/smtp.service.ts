@@ -36,7 +36,7 @@ export class SmtpService {
         const mailOptions = {
             from: process.env.SMTP_USER,
             to: email,
-            subject,
+            subject: `TRAVIA-QUIZ ${subject}`,
             text
         }
 
