@@ -11,13 +11,25 @@ export class SmtpService {
     }
 
     private createTransporter() {
-        this.transporter = nodemailer.createTransport({
-            service: process.env.SMTP_SERVICE,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            }
-        })
+        if (process.env.SMTP_SERVICE.startsWith('smtp.')) {
+            this.transporter = nodemailer.createTransport({
+                host: process.env.SMTP_SERVICE,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS
+                },
+                port: 465,
+                secure: true
+            })
+        } else {
+            this.transporter = nodemailer.createTransport({
+                service: process.env.SMTP_SERVICE,
+                auth: {
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS
+                }
+            })
+        }
     }
 
     async send(email: string, text: string, subject: string) {
