@@ -34,7 +34,7 @@ export class SmtpService {
 
     async send(email: string, text: string, subject: string) {
         const mailOptions = {
-            from: process.env.SMTP_USER,
+            from: `"Travia quiz" <${process.env.SMTP_USER}>`,
             to: email,
             subject: `TRAVIA-QUIZ ${subject}`,
             text
